@@ -1,4 +1,4 @@
-# ProjectGuard
+# ProjectGuard (developing)
 
 ProjectGuard is a local project manager and monitor designed to help developers efficiently manage and track their projects in a streamlined way. It provides real-time monitoring, automation, and enhanced visibility over local projects.
 
