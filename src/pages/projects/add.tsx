@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Dispatch, SetStateAction, useState } from "react";
+import { open } from "@tauri-apps/plugin-dialog";
 
 interface Project {
     name: string;
@@ -31,6 +32,7 @@ const AddProjectModal = ({
     };
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isSelectingPath, setIsSelectingPath] = useState(false);
 
     const scriptOptions = [
         { value: "start", label: "Start" },
@@ -41,6 +43,23 @@ const AddProjectModal = ({
     const handleScriptSelect = (value: string) => {
         setNewProject({ ...newProject, script: value });
         setIsDropdownOpen(false);
+    };
+
+    const handleOpenFileExplorer = async () => {
+        setIsSelectingPath(true);
+        try {
+            const selectedPath = await open({
+                directory: true,
+                multiple: false,
+            });
+            if (selectedPath) {
+                setNewProject(prev => ({ ...prev, path: selectedPath as string }));
+            }
+        } catch (error) {
+            console.error("Failed to open file explorer:", error);
+        } finally {
+            setIsSelectingPath(false);
+        }
     };
 
     return (
@@ -105,23 +124,46 @@ const AddProjectModal = ({
                         onFocus={(e) => (e.target.style.borderColor = theme.primary)}
                         onBlur={(e) => (e.target.style.borderColor = `${theme.secondary}50`)}
                     />
-                    <input
-                        type="text"
-                        placeholder="Project Path"
-                        value={newProject.path}
-                        onChange={(e) => setNewProject({ ...newProject, path: e.target.value })}
-                        style={{
-                            padding: "14px 18px",
-                            borderRadius: "10px",
-                            border: `1px solid ${theme.secondary}50`,
-                            fontSize: "15px",
-                            outline: "none",
-                            backgroundColor: "#f9fafb",
-                            transition: "border-color 0.3s ease",
-                        }}
-                        onFocus={(e) => (e.target.style.borderColor = theme.primary)}
-                        onBlur={(e) => (e.target.style.borderColor = `${theme.secondary}50`)}
-                    />
+                    <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                        <input
+                            type="text"
+                            placeholder="Project Path"
+                            value={newProject.path}
+                            onChange={(e) => setNewProject({ ...newProject, path: e.target.value })}
+                            style={{
+                                padding: "14px 18px",
+                                borderRadius: "10px",
+                                border: `1px solid ${theme.secondary}50`,
+                                fontSize: "15px",
+                                outline: "none",
+                                backgroundColor: "#f9fafb",
+                                transition: "border-color 0.3s ease",
+                                flex: 1,
+                            }}
+                            onFocus={(e) => (e.target.style.borderColor = theme.primary)}
+                            onBlur={(e) => (e.target.style.borderColor = `${theme.secondary}50`)}
+                        />
+                        <motion.button
+                            onClick={handleOpenFileExplorer}
+                            disabled={isSelectingPath}
+                            style={{
+                                opacity: isSelectingPath ? 0.6 : 1,
+                                padding: "10px",
+                                marginLeft: "10px",
+                                borderRadius: "10px",
+                                border: `1px solid ${theme.secondary}50`,
+                                backgroundColor: "#f9fafb",
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                            }}
+                            whileHover={{ backgroundColor: theme.secondary + "20" }}
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            {isSelectingPath ? "..." : "📁"}
+                        </motion.button>
+                    </div>
                     <input
                         type="text"
                         placeholder="Project Description"
